@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GatherSpace — Discover events worth remembering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#060b09;
+    --surface:#0d1714;
+    --surface-raised:#121e19;
+    --line: rgba(234,243,238,0.09);
+    --line-strong: rgba(234,243,238,0.16);
+    --emerald:#22e6a8;
+    --emerald-dim: rgba(34,230,168,0.14);
+    --amber:#f6b93b;
+    --amber-dim: rgba(246,185,59,0.14);
+    --paper:#eaf3ee;
+    --muted:#88988f;
+    --muted-dim: #526059;
+    --radius-lg: 28px;
+    --radius-md: 18px;
+    --radius-sm: 10px;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Inter', sans-serif;
+    line-height:1.5;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--emerald); color:#04120c; }
+
+  a{ color:inherit; text-decoration:none; }
+  img,svg{ display:block; max-width:100%; }
+
+  h1,h2,h3,h4{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    letter-spacing:-0.02em;
+    line-height:1.05;
+  }
+
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--emerald);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:7px; height:7px; border-radius:50%;
+    background:var(--emerald);
+    box-shadow:0 0 0 4px var(--emerald-dim);
+  }
+  .eyebrow.amber{ color:var(--amber); }
+  .eyebrow.amber::before{ background:var(--amber); box-shadow:0 0 0 4px var(--amber-dim); }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+
+  section{ padding:120px 0; position:relative; }
+  section .kicker{ margin-bottom:22px; }
+
+  button{ font-family:inherit; cursor:pointer; }
+
+  /* focus visibility */
+  a:focus-visible, button:focus-visible, input:focus-visible{
+    outline:2px solid var(--emerald);
+    outline-offset:3px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001s !important; animation-iteration-count:1 !important; transition-duration:0.001s !important; }
+  }
+
+  /* ---------- NAV ---------- */
+  header.nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(6,11,9,0.78);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-inner{
+    max-width:1180px; margin:0 auto; padding:18px 32px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .logo{ display:flex; align-items:center; gap:11px; font-family:'Space Grotesk'; font-weight:700; font-size:19px; }
+  .logo-mark{
+    width:34px; height:34px; border-radius:10px;
+    background:linear-gradient(150deg, var(--emerald), #0fae7f);
+    display:flex; align-items:center; justify-content:center;
+    color:#04140d; font-weight:700; font-size:14px;
+    box-shadow:0 6px 20px -6px rgba(34,230,168,0.6);
+  }
+  .nav-links{ display:flex; align-items:center; gap:34px; font-size:14.5px; color:var(--muted); }
+  .nav-links a{ transition:color .2s; }
+  .nav-links a:hover{ color:var(--paper); }
+  .nav-cta{
+    padding:10px 20px; border-radius:100px;
+    background:var(--emerald); color:#04140d;
+    font-weight:600; font-size:14px;
+    border:1px solid var(--emerald);
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .nav-cta:hover{ transform:translateY(-1px); box-shadow:0 10px 24px -10px rgba(34,230,168,0.7); }
+  .nav-toggle{ display:none; }
+
+  @media (max-width: 860px){
+    .nav-links{ display:none; }
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding:88px 0 60px;
+    position:relative;
+    overflow:hidden;
+  }
+  .hero::before{
+    content:"";
+    position:absolute; top:-260px; left:50%; transform:translateX(-50%);
+    width:900px; height:620px;
+    background:radial-gradient(circle at center, rgba(34,230,168,0.16), transparent 65%);
+    pointer-events:none;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.05fr 0.95fr;
+    gap:56px;
+    align-items:center;
+    position:relative;
+    z-index:2;
+  }
+  .hero h1{
+    font-size:clamp(38px, 5vw, 60px);
+    margin:18px 0 22px;
+  }
+  .hero h1 em{
+    font-style:normal;
+    background:linear-gradient(100deg, var(--emerald), #7ef4cc 60%, var(--emerald));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .hero p.lede{
+    font-size:17.5px;
+    color:var(--muted);
+    max-width:480px;
+    margin-bottom:36px;
+  }
+  .hero-ctas{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:40px; }
+  .btn{
+    display:inline-flex; align-items:center; gap:9px;
+    padding:15px 26px; border-radius:100px;
+    font-weight:600; font-size:15px;
+    transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+    border:1px solid transparent;
+  }
+  .btn-primary{ background:var(--emerald); color:#04140d; }
+  .btn-primary:hover{ transform:translateY(-2px); box-shadow:0 14px 30px -12px rgba(34,230,168,0.65); }
+  .btn-ghost{ background:transparent; color:var(--paper); border-color:var(--line-strong); }
+  .btn-ghost:hover{ border-color:var(--emerald); color:var(--emerald); transform:translateY(-2px); }
+  .btn-amber{ background:var(--amber); color:#241300; }
+  .btn-amber:hover{ transform:translateY(-2px); box-shadow:0 14px 30px -12px rgba(246,185,59,0.6); }
+
+  .hero-trust{ display:flex; gap:28px; color:var(--muted-dim); font-size:13px; font-family:'IBM Plex Mono'; flex-wrap:wrap; }
+  .hero-trust span{ display:flex; align-items:center; gap:8px; }
+  .hero-trust b{ color:var(--paper); font-weight:600; }
+
+  /* phone mockup */
+  .phone-stage{ position:relative; display:flex; justify-content:center; }
+  .phone{
+    width:280px;
+    background:#0a1512;
+    border:10px solid #16241f;
+    border-radius:40px;
+    box-shadow:0 40px 80px -30px rgba(0,0,0,0.75), 0 0 0 1px rgba(234,243,238,0.05);
+    overflow:hidden;
+    position:relative;
+  }
+  .phone-notch{
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:110px; height:22px; background:#16241f; border-radius:0 0 16px 16px; z-index:5;
+  }
+  .phone-screen{ padding:34px 18px 20px; min-height:560px; }
+  .phone-title{ font-family:'Space Grotesk'; font-weight:700; font-size:23px; margin-bottom:4px;}
+  .phone-loc{ display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); margin-bottom:16px; }
+  .phone-loc .pin{ color:var(--emerald); }
+  .phone-search{
+    background:var(--surface-raised); border:1px solid var(--line);
+    border-radius:100px; padding:11px 16px; font-size:12.5px; color:var(--muted-dim);
+    margin-bottom:16px;
+  }
+  .phone-chip-row{ display:flex; gap:8px; margin-bottom:20px; overflow:hidden; }
+  .phone-chip{
+    flex:none; padding:8px 13px; border-radius:100px; font-size:11px; font-family:'IBM Plex Mono';
+    background:var(--surface-raised); color:var(--muted); border:1px solid var(--line);
+  }
+  .phone-chip.active{ background:var(--emerald-dim); color:var(--emerald); border-color:rgba(34,230,168,0.4); }
+  .phone-card{
+    border-radius:20px; overflow:hidden; position:relative;
+    background:
+      radial-gradient(120% 90% at 20% 0%, rgba(246,185,59,0.55), transparent 55%),
+      radial-gradient(140% 100% at 90% 100%, rgba(34,230,168,0.5), transparent 60%),
+      linear-gradient(160deg, #16241f, #0a1512);
+    height:150px; padding:14px; display:flex; flex-direction:column; justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .phone-tag{
+    align-self:flex-start; background:rgba(6,11,9,0.55); backdrop-filter:blur(3px);
+    padding:5px 10px; border-radius:100px; font-size:10px; font-family:'IBM Plex Mono'; color:var(--amber);
+    display:flex; align-items:center; gap:5px;
+  }
+  .phone-card-body .cat{ font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(234,243,238,0.6); margin-bottom:3px; font-family:'IBM Plex Mono';}
+  .phone-card-body .name{ font-family:'Space Grotesk'; font-weight:700; font-size:16px; }
+  .phone-mini-card{
+    display:flex; gap:12px; align-items:center; padding:10px; border-radius:14px;
+    background:var(--surface-raised); border:1px solid var(--line); margin-bottom:10px;
+  }
+  .phone-mini-thumb{ width:44px; height:44px; border-radius:10px; background:linear-gradient(150deg, rgba(34,230,168,0.5), rgba(246,185,59,0.4)); flex:none;}
+  .phone-mini-text .t{ font-size:12.5px; font-weight:600; }
+  .phone-mini-text .s{ font-size:10.5px; color:var(--muted); }
+
+  .float-badge{
+    position:absolute; background:var(--surface-raised); border:1px solid var(--line-strong);
+    border-radius:16px; padding:12px 14px; box-shadow:0 20px 40px -18px rgba(0,0,0,0.7);
+    font-family:'IBM Plex Mono'; font-size:11px; display:flex; align-items:center; gap:10px;
+    animation:float 5s ease-in-out infinite;
+  }
+  .float-badge .dot{ width:8px; height:8px; border-radius:50%; background:var(--emerald); box-shadow:0 0 0 5px var(--emerald-dim);}
+  .float-1{ top:8%; left:-46px; animation-delay:0s;}
+  .float-2{ bottom:10%; right:-38px; animation-delay:1.4s;}
+  @keyframes float{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-10px); }
+  }
+
+  @media (max-width: 940px){
+    .hero-grid{ grid-template-columns:1fr; }
+    .phone-stage{ margin-top:20px; }
+    .float-badge{ display:none; }
+  }
+
+  /* ---------- MARQUEE ---------- */
+  .marquee-wrap{
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+    padding:22px 0; overflow:hidden; background:var(--surface);
+  }
+  .marquee{
+    display:flex; gap:14px; width:max-content;
+    animation:scroll 26s linear infinite;
+  }
+  .marquee-wrap:hover .marquee{ animation-play-state:paused; }
+  @keyframes scroll{
+    from{ transform:translateX(0); }
+    to{ transform:translateX(-50%); }
+  }
+  .m-chip{
+    display:flex; align-items:center; gap:9px;
+    padding:10px 20px; border-radius:100px; border:1px solid var(--line-strong);
+    font-family:'IBM Plex Mono'; font-size:13px; color:var(--muted); white-space:nowrap;
+  }
+  .m-chip .ic{ color:var(--emerald); }
+
+  /* ---------- SECTION HEADERS ---------- */
+  .sec-head{ max-width:640px; margin-bottom:60px; }
+  .sec-head h2{ font-size:clamp(28px,3.4vw,42px); margin-top:16px; }
+  .sec-head p{ color:var(--muted); font-size:16px; margin-top:14px; }
+
+  /* ---------- RADIUS SIGNATURE SECTION ---------- */
+  .radius-section{ background:var(--surface); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .radius-grid{ display:grid; grid-template-columns:0.9fr 1.1fr; gap:70px; align-items:center; }
+  .radius-visual{ position:relative; width:100%; aspect-ratio:1/1; max-width:420px; margin:0 auto; }
+  .radius-visual svg{ width:100%; height:100%; }
+  .ring{ fill:none; stroke:var(--emerald); transition:opacity .4s ease, stroke-width .4s ease; }
+  .ring-fill{ fill:var(--emerald); opacity:0.05; transition:opacity .4s ease; }
+  .pin-pulse{
+    transform-origin:center;
+    animation:pulse 2.2s ease-out infinite;
+  }
+  @keyframes pulse{
+    0%{ transform:scale(0.3); opacity:0.7; }
+    100%{ transform:scale(1); opacity:0; }
+  }
+  .radius-copy .stat{ font-family:'Space Grotesk'; font-size:54px; font-weight:700; color:var(--emerald); line-height:1; }
+  .radius-copy .stat span{ font-size:22px; color:var(--muted); font-weight:500; margin-left:6px; }
+  .radius-pills{ display:flex; gap:10px; flex-wrap:wrap; margin:26px 0 30px; }
+  .r-pill{
+    padding:11px 20px; border-radius:100px; border:1px solid var(--line-strong);
+    background:var(--surface-raised); color:var(--muted); font-family:'IBM Plex Mono'; font-size:13.5px;
+    transition:all .2s ease;
+  }
+  .r-pill.active{ background:var(--emerald); color:#04140d; border-color:var(--emerald); font-weight:600; }
+  .radius-feat{ display:flex; flex-direction:column; gap:16px; }
+  .radius-feat-item{ display:flex; gap:14px; align-items:flex-start; }
+  .radius-feat-item .n{
+    font-family:'IBM Plex Mono'; font-size:12px; color:var(--emerald);
+    border:1px solid rgba(34,230,168,0.35); width:26px; height:26px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; flex:none; margin-top:2px;
+  }
+  .radius-feat-item .txt b{ display:block; font-size:15px; margin-bottom:3px; }
+  .radius-feat-item .txt span{ color:var(--muted); font-size:14px; }
+
+  @media (max-width:900px){ .radius-grid{ grid-template-columns:1fr; } }
+
+  /* ---------- BOOKING TYPES (TICKET STUB CARDS) ---------- */
+  .ticket-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:26px; }
+  .ticket{
+    position:relative;
+    background:var(--surface-raised);
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:30px 26px 26px;
+    display:flex; flex-direction:column; gap:18px;
+    min-height:340px;
+  }
+  .ticket::before, .ticket::after{
+    content:""; position:absolute; width:26px; height:26px; background:var(--ink);
+    border-radius:50%; top:50%; transform:translateY(-50%);
+  }
+  .ticket::before{ left:-13px; }
+  .ticket::after{ right:-13px; }
+  .ticket .perf{
+    position:absolute; left:14px; right:14px; top:calc(50% - 1px);
+    border-top:2px dashed var(--line-strong);
+  }
+  .ticket-top .n{ font-family:'IBM Plex Mono'; color:var(--emerald); font-size:12px; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:8px; display:block;}
+  .ticket-top h3{ font-size:21px; }
+  .ticket-top p{ color:var(--muted); font-size:13.5px; margin-top:8px; }
+  .ticket-visual{ flex:1; display:flex; align-items:center; justify-content:center; padding-top:16px; }
+
+  /* seat grid mini */
+  .seat-mini{ display:grid; grid-template-columns:repeat(8,1fr); gap:4px; width:100%; }
+  .seat-mini .s{ aspect-ratio:1/1; border-radius:4px; background:var(--surface); border:1px solid var(--line); }
+  .seat-mini .s.on{ background:var(--emerald); border-color:var(--emerald); }
+
+  /* GA stepper mini */
+  .ga-mini{ display:flex; align-items:center; gap:22px; }
+  .ga-mini .circ{ width:44px; height:44px; border-radius:50%; border:1px solid var(--line-strong); display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--muted); }
+  .ga-mini .num{ font-family:'Space Grotesk'; font-size:40px; font-weight:700; }
+
+  /* time slot mini */
+  .slot-mini{ display:flex; flex-direction:column; gap:10px; width:100%; }
+  .slot-mini .sl{ padding:11px 14px; border-radius:12px; border:1px solid var(--line-strong); font-size:12.5px; color:var(--muted); font-family:'IBM Plex Mono'; display:flex; justify-content:space-between; }
+  .slot-mini .sl.on{ border-color:var(--emerald); color:var(--emerald); background:var(--emerald-dim); }
+
+  @media (max-width:900px){ .ticket-row{ grid-template-columns:1fr; } }
+
+  /* ---------- QR SECTION ---------- */
+  .qr-section{ background:var(--surface); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .qr-grid{ display:grid; grid-template-columns:1fr 0.85fr; gap:70px; align-items:center; }
+  .qr-list{ display:flex; flex-direction:column; gap:22px; margin-top:30px; }
+  .qr-list .item{ display:flex; gap:16px; }
+  .qr-list .ic{
+    width:40px; height:40px; border-radius:12px; background:var(--emerald-dim); color:var(--emerald);
+    display:flex; align-items:center; justify-content:center; flex:none; font-size:17px;
+  }
+  .qr-list b{ display:block; font-size:15.5px; margin-bottom:4px; }
+  .qr-list span{ color:var(--muted); font-size:14px; }
+
+  .qr-card-wrap{ display:flex; justify-content:center; }
+  .qr-card{
+    width:300px; background:var(--surface-raised); border:1px solid var(--line-strong);
+    border-radius:24px; padding:22px; position:relative; box-shadow:0 30px 60px -25px rgba(0,0,0,0.7);
+  }
+  .qr-card .top-strip{ height:90px; border-radius:16px; margin-bottom:16px;
+    background:radial-gradient(120% 100% at 10% 0%, rgba(34,230,168,0.5), transparent 60%), linear-gradient(160deg, #16241f, #0a1512);
+  }
+  .qr-card .tag{ display:inline-block; padding:4px 10px; border-radius:100px; background:var(--emerald-dim); color:var(--emerald); font-size:10.5px; font-family:'IBM Plex Mono'; margin-bottom:10px; }
+  .qr-card h4{ font-size:18px; margin-bottom:6px; }
+  .qr-card .meta{ font-size:12px; color:var(--muted); margin-bottom:16px; }
+  .qr-dashed{ border-top:2px dashed var(--line-strong); margin:14px 0; position:relative; }
+  .qr-dashed::before, .qr-dashed::after{ content:""; position:absolute; width:20px; height:20px; background:var(--ink); border-radius:50%; top:-10px; }
+  .qr-dashed::before{ left:-32px; }
+  .qr-dashed::after{ right:-32px; }
+  .qr-code{
+    width:150px; height:150px; margin:6px auto 10px;
+    background:#fff; border-radius:10px; padding:10px;
+    display:grid; grid-template-columns:repeat(9,1fr); grid-template-rows:repeat(9,1fr); gap:2px;
+  }
+  .qr-code i{ background:#050705; border-radius:1px; }
+  .qr-code i.off{ background:transparent; }
+  .qr-foot{ text-align:center; font-size:11.5px; color:var(--muted); font-family:'IBM Plex Mono'; }
+  .qr-foot b{ color:var(--paper); display:block; margin-top:3px; font-size:12px; }
+
+  @media (max-width:940px){ .qr-grid{ grid-template-columns:1fr; } .qr-card-wrap{ margin-top:20px; } }
+
+  /* ---------- ORGANIZER SECTION ---------- */
+  .org-grid{ display:grid; grid-template-columns:1fr 1fr; gap:60px; align-items:start; }
+  .org-panel{
+    background:var(--surface-raised); border:1px solid var(--line); border-radius:24px; padding:26px;
+  }
+  .org-panel h4{ font-family:'IBM Plex Mono'; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:18px; }
+  .create-mock .field{ margin-bottom:14px; }
+  .create-mock label{ font-size:11.5px; color:var(--muted-dim); display:block; margin-bottom:6px; font-family:'IBM Plex Mono';}
+  .create-mock .box{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 14px; font-size:13px; color:var(--muted); }
+  .create-mock .map-box{ height:110px; border-radius:12px; background:
+      linear-gradient(0deg, rgba(234,243,238,0.05) 1px, transparent 1px) 0 0/22px 22px,
+      linear-gradient(90deg, rgba(234,243,238,0.05) 1px, transparent 1px) 0 0/22px 22px,
+      var(--surface);
+    border:1px solid var(--line); position:relative; margin-bottom:14px;
+  }
+  .map-box .pin-mark{ position:absolute; top:44%; left:52%; width:16px; height:16px; border-radius:50% 50% 50% 0; background:var(--emerald); transform:translate(-50%,-50%) rotate(-45deg); box-shadow:0 0 0 6px var(--emerald-dim); }
+  .upload-row{ display:flex; gap:8px; }
+  .upload-row .u{ width:52px; height:52px; border-radius:10px; border:1px dashed var(--line-strong); display:flex; align-items:center; justify-content:center; color:var(--muted-dim); font-size:18px; flex:none; }
+  .upload-row .u.img1{ background:linear-gradient(150deg, rgba(246,185,59,0.55), rgba(34,230,168,0.35)); border-style:solid; border-color:var(--emerald); }
+  .upload-row .u.img2{ background:linear-gradient(150deg, rgba(34,230,168,0.4), #16241f); border-style:solid; border-color:var(--line-strong); }
+
+  .stats-mock{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+  .stat-card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; }
+  .stat-card .v{ font-family:'Space Grotesk'; font-size:24px; font-weight:700; }
+  .stat-card .l{ font-size:11.5px; color:var(--muted); margin-top:3px; }
+  .stat-card.accent .v{ color:var(--emerald); }
+  .cat-bar-row{ display:flex; align-items:center; gap:10px; margin-bottom:10px; font-size:12px; }
+  .cat-bar-row .dot{ width:8px; height:8px; border-radius:50%; background:var(--emerald); flex:none; }
+  .cat-bar-row .track{ flex:1; height:6px; border-radius:100px; background:var(--surface); overflow:hidden; }
+  .cat-bar-row .fill{ height:100%; background:var(--emerald); border-radius:100px; }
+  .cat-bar-row .n{ font-family:'IBM Plex Mono'; color:var(--muted); width:16px; text-align:right; }
+
+  .org-copy{ padding-top:8px; }
+  .org-copy .feat-list{ margin-top:26px; display:flex; flex-direction:column; gap:18px; }
+  .org-copy .feat-list .item{ display:flex; gap:14px; }
+  .org-copy .feat-list .n{
+    font-family:'IBM Plex Mono'; font-size:12px; color:var(--amber);
+    border:1px solid rgba(246,185,59,0.35); width:26px; height:26px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center; flex:none; margin-top:2px;
+  }
+
+  @media (max-width:940px){ .org-grid{ grid-template-columns:1fr; } .org-copy{ order:-1; } }
+
+  /* ---------- CTA ---------- */
+  .cta-section{ text-align:center; padding:140px 0; position:relative; overflow:hidden; }
+  .cta-section::before{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(circle at 50% 0%, rgba(34,230,168,0.16), transparent 60%);
+  }
+  .cta-section h2{ font-size:clamp(30px,4.6vw,54px); position:relative; z-index:2; }
+  .cta-section p{ color:var(--muted); max-width:480px; margin:18px auto 34px; font-size:16.5px; position:relative; z-index:2; }
+  .cta-btns{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; position:relative; z-index:2; }
+
+  /* ---------- FOOTER ---------- */
+  footer{ border-top:1px solid var(--line); padding:56px 0 40px; }
+  .foot-grid{ display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:30px; margin-bottom:40px; }
+  .foot-cols{ display:flex; gap:70px; flex-wrap:wrap; }
+  .foot-col h5{ font-family:'IBM Plex Mono'; font-size:11.5px; text-transform:uppercase; letter-spacing:0.1em; color:var(--muted-dim); margin-bottom:14px; }
+  .foot-col a{ display:block; color:var(--muted); font-size:14px; margin-bottom:10px; transition:color .2s; }
+  .foot-col a:hover{ color:var(--emerald); }
+  .foot-bottom{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; border-top:1px solid var(--line); padding-top:26px; font-size:12.5px; color:var(--muted-dim); font-family:'IBM Plex Mono'; }
+
+  @media (max-width:640px){
+    section{ padding:80px 0; }
+    .wrap{ padding:0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <div class="logo"><span class="logo-mark">GS</span> GatherSpace</div>
+    <nav class="nav-links">
+      <a href="#discover">How it works</a>
+      <a href="#booking">Booking types</a>
+      <a href="#organizers">For organizers</a>
+      <a href="#ticket">Tickets</a>
+    </nav>
+    <a href="#cta" class="nav-cta">Open the app</a>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <div class="eyebrow">Local · Live · Loud</div>
+      <h1>Discover events <br><em>worth remembering.</em></h1>
+      <p class="lede">Concerts, art shows, and tech meetups — surfaced by how close they are, booked however they're sold, and unlocked with one QR code at the door.</p>
+      <div class="hero-ctas">
+        <a href="#discover" class="btn btn-primary">I'm here to discover →</a>
+        <a href="#organizers" class="btn btn-ghost">I'm organizing events</a>
+      </div>
+      <div class="hero-trust">
+        <span><b>10km</b> default search radius</span>
+        <span><b>3</b> booking formats</span>
+        <span><b>1</b> QR code, every venue</span>
+      </div>
+    </div>
+
+    <div class="phone-stage">
+      <div class="float-badge float-1"><span class="dot"></span> Radius set: 10km</div>
+      <div class="float-badge float-2"><span class="dot"></span> Ticket confirmed ✓</div>
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen">
+          <div class="phone-title">Discover</div>
+          <div class="phone-loc"><span class="pin">◎</span> Your current location · 10km</div>
+          <div class="phone-search">Search events</div>
+          <div class="phone-chip-row">
+            <div class="phone-chip active">All</div>
+            <div class="phone-chip">Music</div>
+            <div class="phone-chip">Art</div>
+            <div class="phone-chip">Tech</div>
+          </div>
+          <div class="phone-card">
+            <div class="phone-tag">🔥 Featured</div>
+            <div class="phone-card-body">
+              <div class="cat">Music</div>
+              <div class="name">Sunset Symphony</div>
+            </div>
+          </div>
+          <div class="phone-mini-card">
+            <div class="phone-mini-thumb"></div>
+            <div class="phone-mini-text">
+              <div class="t">Founders Roundtable</div>
+              <div class="s">Innovation Hub · 0.4km</div>
+            </div>
+          </div>
+          <div class="phone-mini-card">
+            <div class="phone-mini-thumb"></div>
+            <div class="phone-mini-text">
+              <div class="t">Modernism Reimagined</div>
+              <div class="s">SFMOMA Annex · 1.2km</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="marquee-wrap">
+  <div class="marquee" id="marquee">
+    <div class="m-chip"><span class="ic">✦</span> All</div>
+    <div class="m-chip"><span class="ic">♪</span> Music</div>
+    <div class="m-chip"><span class="ic">◈</span> Art</div>
+    <div class="m-chip"><span class="ic">▣</span> Tech</div>
+    <div class="m-chip"><span class="ic">◎</span> Food</div>
+    <div class="m-chip"><span class="ic">◆</span> Sports</div>
+    <div class="m-chip"><span class="ic">✎</span> Workshops</div>
+    <div class="m-chip"><span class="ic">☺</span> Comedy</div>
+  </div>
+</div>
+
+<section class="radius-section" id="discover">
+  <div class="wrap radius-grid">
+    <div class="radius-visual">
+      <svg viewBox="0 0 400 400">
+        <circle class="ring-fill" id="fill5" cx="200" cy="200" r="40"/>
+        <circle class="ring" id="ring5" cx="200" cy="200" r="40" stroke-width="1.5" opacity="0.35"/>
+        <circle class="ring-fill" id="fill10" cx="200" cy="200" r="75"/>
+        <circle class="ring" id="ring10" cx="200" cy="200" r="75" stroke-width="1.5" opacity="0.35"/>
+        <circle class="ring-fill" id="fill25" cx="200" cy="200" r="115"/>
+        <circle class="ring" id="ring25" cx="200" cy="200" r="115" stroke-width="1.5" opacity="0.2"/>
+        <circle class="ring-fill" id="fill50" cx="200" cy="200" r="155"/>
+        <circle class="ring" id="ring50" cx="200" cy="200" r="155" stroke-width="1.5" opacity="0.12"/>
+        <circle class="ring-fill" id="fill100" cx="200" cy="200" r="195"/>
+        <circle class="ring" id="ring100" cx="200" cy="200" r="195" stroke-width="1.5" opacity="0.06"/>
+        <circle class="pin-pulse" cx="200" cy="200" r="60" fill="#22e6a8" opacity="0.25"/>
+        <circle cx="200" cy="200" r="9" fill="#22e6a8"/>
+        <circle cx="200" cy="200" r="9" fill="none" stroke="#04140d" stroke-width="2.5"/>
+      </svg>
+    </div>
+    <div class="radius-copy">
+      <div class="eyebrow">Geolocation, on your terms</div>
+      <h2 style="margin-top:16px; font-size:clamp(26px,3vw,36px);">You set the radius. GatherSpace does the rest.</h2>
+      <div class="stat" id="radiusStat">10<span>km around you</span></div>
+      <div class="radius-pills" id="radiusPills">
+        <button class="r-pill" data-km="5">5 km</button>
+        <button class="r-pill active" data-km="10">10 km</button>
+        <button class="r-pill" data-km="25">25 km</button>
+        <button class="r-pill" data-km="50">50 km</button>
+        <button class="r-pill" data-km="100">100 km</button>
+      </div>
+      <div class="radius-feat">
+        <div class="radius-feat-item">
+          <div class="n">1</div>
+          <div class="txt"><b>Starts at 10km, always adjustable</b><span>A sensible default the moment you open the app — widen it for a road trip, narrow it for a walkable Friday night.</span></div>
+        </div>
+        <div class="radius-feat-item">
+          <div class="n">2</div>
+          <div class="txt"><b>Recenters on your current location</b><span>One tap refreshes the pin, so the feed always reflects where you actually are.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="booking">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="eyebrow">Book however it's sold</div>
+      <h2>Three ways to hold a spot.</h2>
+      <p>Every event picks the format that fits it — a numbered seat, a headcount, or a session. GatherSpace switches the entire booking flow to match.</p>
+    </div>
+    <div class="ticket-row">
+      <div class="ticket">
+        <div class="perf"></div>
+        <div class="ticket-top">
+          <span class="n">Reserved Seating</span>
+          <h3>Pick your exact seat</h3>
+          <p>Row and seat number, chosen from a live map — like F3 and F4, stage-facing.</p>
+        </div>
+        <div class="ticket-visual">
+          <div class="seat-mini" id="seatMini"></div>
+        </div>
+      </div>
+
+      <div class="ticket">
+        <div class="perf"></div>
+        <div class="ticket-top">
+          <span class="n">General Admission</span>
+          <h3>Just a headcount</h3>
+          <p>No seat map needed — set how many tickets, GatherSpace tracks capacity in real time.</p>
+        </div>
+        <div class="ticket-visual">
+          <div class="ga-mini">
+            <div class="circ">−</div>
+            <div class="num">2</div>
+            <div class="circ">+</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ticket">
+        <div class="perf"></div>
+        <div class="ticket-top">
+          <span class="n">Time Slots</span>
+          <h3>Choose a session</h3>
+          <p>For roundtables and workshops — book the exact window that works for you.</p>
+        </div>
+        <div class="ticket-visual">
+          <div class="slot-mini">
+            <div class="sl">10:00 AM Session <span>18 left</span></div>
+            <div class="sl on">11:00 AM Session <span>Selected</span></div>
+            <div class="sl">2:00 PM Session <span>42 left</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="qr-section" id="ticket">
+  <div class="wrap qr-grid">
+    <div>
+      <div class="eyebrow amber">At the door</div>
+      <h2 style="margin-top:16px; font-size:clamp(26px,3vw,36px);">One QR. Every venue.</h2>
+      <p style="color:var(--muted); margin-top:14px; max-width:420px;">Every booking — seated, general, or slotted — collapses into a single ticket with one QR code. Show it, get scanned, walk in.</p>
+      <div class="qr-list">
+        <div class="item">
+          <div class="ic">₹</div>
+          <div><b>Pay online or pay at venue</b><span>Choose secure checkout for instant confirmation, or reserve now and settle up when you arrive.</span></div>
+        </div>
+        <div class="item">
+          <div class="ic">◎</div>
+          <div><b>Everything lives under My Tickets</b><span>Upcoming and completed bookings, sorted automatically, no digging through emails.</span></div>
+        </div>
+        <div class="item">
+          <div class="ic">▣</div>
+          <div><b>Organizers scan, not check lists</b><span>A dedicated Scan tab reads the same QR at the gate and checks the attendee in instantly.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="qr-card-wrap">
+      <div class="qr-card">
+        <div class="top-strip"></div>
+        <div class="tag">Music</div>
+        <h4>Sunset Symphony</h4>
+        <div class="meta">Sun, Dec 12 · 7:00 PM · Golden Gate Park</div>
+        <div class="qr-dashed"></div>
+        <div class="qr-code" id="qrCode"></div>
+        <div class="qr-foot">Show this QR at the entrance<b>Seats F3, F4 · ₹200</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="organizers">
+  <div class="wrap org-grid">
+    <div class="org-copy">
+      <div class="eyebrow amber">For organizers</div>
+      <h2 style="margin-top:16px; font-size:clamp(26px,3vw,36px);">List it, place it on the map, watch it sell.</h2>
+      <p style="color:var(--muted); margin-top:14px; max-width:440px;">Publishing an event takes the same few minutes whether it's a rooftop DJ set or a founders roundtable — and every sale rolls straight into your dashboard.</p>
+      <div class="feat-list">
+        <div class="item">
+          <div class="n">1</div>
+          <div><b>Drop a pin, not an address</b><span style="color:var(--muted); font-size:14px;">Place the venue directly on the map and attendees get one-tap directions.</span></div>
+        </div>
+        <div class="item">
+          <div class="n">2</div>
+          <div><b>Upload a banner or pick from your gallery</b><span style="color:var(--muted); font-size:14px;">A cover image is what gets an event featured on Discover.</span></div>
+        </div>
+        <div class="item">
+          <div class="n">3</div>
+          <div><b>Revenue, tickets, and check-ins — live</b><span style="color:var(--muted); font-size:14px;">Analytics update the moment a ticket sells or a QR gets scanned.</span></div>
+        </div>
+      </div>
+      <a href="#cta" class="btn btn-amber" style="margin-top:30px;">Start organizing →</a>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <div class="org-panel">
+        <h4>Create Event</h4>
+        <div class="create-mock">
+          <div class="field">
+            <label>Event title</label>
+            <div class="box">Sunset Symphony</div>
+          </div>
+          <div class="field">
+            <label>Cover image</label>
+            <div class="upload-row">
+              <div class="u">＋</div>
+              <div class="u img1"></div>
+              <div class="u img2"></div>
+            </div>
+          </div>
+          <label style="font-size:11.5px; color:var(--muted-dim); display:block; margin-bottom:6px; font-family:'IBM Plex Mono';">Location</label>
+          <div class="map-box"><div class="pin-mark"></div></div>
+        </div>
+      </div>
+
+      <div class="org-panel">
+        <h4>Analytics</h4>
+        <div class="stats-mock">
+          <div class="stat-card accent"><div class="v">₹500</div><div class="l">Revenue</div></div>
+          <div class="stat-card"><div class="v">5</div><div class="l">Tickets sold</div></div>
+        </div>
+        <div class="cat-bar-row"><span class="dot"></span> Music <div class="track"><div class="fill" style="width:70%"></div></div> <span class="n">1</span></div>
+        <div class="cat-bar-row"><span class="dot" style="background:var(--amber)"></span> Tech <div class="track"><div class="fill" style="width:70%; background:var(--amber)"></div></div> <span class="n">1</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="cta">
+  <div class="wrap">
+    <div class="eyebrow" style="justify-content:center;">Get started</div>
+    <h2 style="margin-top:16px;">Your next Friday night <br>is closer than you think.</h2>
+    <p>Set your radius, pick your format, and carry every ticket as one QR code.</p>
+    <div class="cta-btns">
+      <a href="#" class="btn btn-primary">I'm here to discover →</a>
+      <a href="#" class="btn btn-ghost">I'm organizing events</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="logo"><span class="logo-mark">GS</span> GatherSpace</div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <h5>Product</h5>
+          <a href="#discover">Discover</a>
+          <a href="#booking">Booking types</a>
+          <a href="#ticket">Tickets & QR</a>
+        </div>
+        <div class="foot-col">
+          <h5>Organizers</h5>
+          <a href="#organizers">Create an event</a>
+          <a href="#organizers">Analytics</a>
+          <a href="#organizers">Boost & feature</a>
+        </div>
+        <div class="foot-col">
+          <h5>Company</h5>
+          <a href="#">About</a>
+          <a href="#">Support</a>
+          <a href="#">Privacy</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 GatherSpace</span>
+      <span>Discover events worth remembering.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Marquee: duplicate chips for seamless loop
+  const marquee = document.getElementById('marquee');
+  marquee.innerHTML += marquee.innerHTML;
+
+  // Seat mini grid
+  const seatMini = document.getElementById('seatMini');
+  const selected = new Set(['5-2','5-3']);
+  for(let r=0;r<6;r++){
+    for(let c=0;c<8;c++){
+      const d = document.createElement('div');
+      d.className = 's' + (selected.has(r+'-'+c) ? ' on' : '');
+      seatMini.appendChild(d);
+    }
+  }
+
+  // QR code decorative pattern (deterministic pseudo-random, not scannable)
+  const qr = document.getElementById('qrCode');
+  let seed = 42;
+  function rnd(){ seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+  const finder = (r,c) => (r<3&&c<3)||(r<3&&c>5)||(r>5&&c<3);
+  for(let r=0;r<9;r++){
+    for(let c=0;c<9;c++){
+      const i = document.createElement('i');
+      if(finder(r,c)){
+        const inBorder = (r===0||r===2||c===0||c===2) && r<3 && c<3;
+        i.className = (r===1&&c===1) ? '' : (r%2===0||c%2===0) ? '' : 'off';
+        if(c>5){ i.className = (r===1&&c===7)?'':'off'; if(r%2===0||c%2===0) i.className=''; }
+      } else {
+        i.className = rnd() > 0.5 ? '' : 'off';
+      }
+      qr.appendChild(i);
+    }
+  }
+
+  // Radius dial interactivity
+  const kms = [5,10,25,50,100];
+  const rMap = {5:40,10:75,25:115,50:155,100:195};
+  const pills = document.querySelectorAll('.r-pill');
+  const stat = document.getElementById('radiusStat');
+
+  function setRadius(km){
+    pills.forEach(p => p.classList.toggle('active', +p.dataset.km === km));
+    stat.innerHTML = km + '<span>km around you</span>';
+    kms.forEach(k => {
+      const ring = document.getElementById('ring'+k);
+      const fill = document.getElementById('fill'+k);
+      const active = k <= km;
+      ring.style.opacity = active ? 0.9 : 0.12;
+      ring.style.strokeWidth = (k === km) ? 2.5 : 1.2;
+      fill.style.opacity = (k === km) ? 0.12 : 0.03;
+    });
+  }
+  pills.forEach(p => p.addEventListener('click', () => setRadius(+p.dataset.km)));
+  setRadius(10);
+</script>
+
+</body>
+</html>
